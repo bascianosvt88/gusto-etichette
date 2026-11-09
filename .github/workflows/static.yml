@@ -4,7 +4,7 @@ name: Pubblica Gusto Etichette
 on:
   push:
     branches:
-      - principale
+      - main
   workflow_dispatch:
 
 permissions:
