@@ -82,7 +82,7 @@ body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!imp
 <div class="photo-editor-layout" id="photoEditorLayout">
  <div class="photo-preview-panel">
   <div id="photoLabelPreview" class="photo-label-preview"><div class="photo-preview-empty">Anteprima fotografia<br>60 × 40 mm</div></div>
-  <p class="photo-pan-hint">Trascina la fotografia con il dito per spostarla e centrare l’etichetta.</p>
+  <p class="photo-pan-hint">L’immagine viene ritagliata per riempire l’etichetta; trascinala per scegliere l’inquadratura.</p>
  </div>
  <div class="photo-control-panel">
   <button type="button" class="btn" id="startLabelCamera">Scatta foto</button>
@@ -104,7 +104,7 @@ body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!imp
   <button type="button" class="btn" id="printLabelPhoto" disabled>Stampa 60 × 40</button>
  </div>
 </div>
-<p class="hint">La stampa riproduce esattamente l’inquadratura mostrata a sinistra, nel formato 60 × 40 mm.</p>
+<p class="hint">La fotografia viene preparata alla risoluzione di stampa 203 dpi e adattata al formato selezionato, senza deformazioni.</p>
 </section>
 <section class="card hide" id="generalBackup"><h2>Backup generale</h2><p class="hint">Esporta o importa tutti i dati delle etichette, le fotografie e il registro abbattimenti in un unico file. In esportazione scegli tu dove salvare il backup, se il browser supporta il selettore di destinazione.</p><div class="grid"><button type="button" class="btn" id="exportGeneralBackup">Esporta backup generale</button><button type="button" class="btn secondary" id="importGeneralBackup">Importa backup generale</button></div><input type="file" id="generalBackupFile" accept=".json,application/json" style="display:none"><p class="hint">L'importazione sostituisce gli archivi attuali. Esporta prima un backup se vuoi conservarli.</p></section>
 <section id="archive" class="card hide"><h2>Archivio prodotti</h2><div id="items">Nessun prodotto salvato.</div><p class="hint">Archivio memorizzato sul dispositivo e nel browser utilizzato.</p></section><section id="blastArchive" class="card hide"><div class="pdf-head"><h2>Registro prodotti abbattuti</h2><button type="button" class="btn" id="exportBlastPdf">Salva registro in PDF</button></div><div id="blastItems">Nessun prodotto abbattuto registrato.</div><p class="hint">Ogni etichetta stampata con la data “Abbattuto il” compilata viene registrata automaticamente qui, con i relativi lotti di riferimento.</p></section>
@@ -115,8 +115,8 @@ body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!imp
 <script>
 (()=>{const ids=['name','ingredients','lot','blastDate','production','expiry','referenceLots'];const $=id=>document.getElementById(id);const today=()=>{let d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};const date=v=>v? v.slice(8,10)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'—';if(!$('production').value)$('production').value=today();const read=()=>({...Object.fromEntries(ids.map(k=>[k,$(k).value.trim()]))});const write=o=>{ids.forEach(k=>$(k).value=o[k]||'')};const defaultLot=()=> 'G'+today().replaceAll('-','');
 function update(){let x=read();$('referenceLotsBox').classList.toggle('hide',!x.blastDate);$('vName').textContent=x.name||'NOME PRODOTTO';$('vIngredients').textContent='Ingredienti: '+(x.ingredients||'—');$('vLot').textContent='Lotto: '+(x.lot||defaultLot());$('vProduction').textContent='Prod.: '+date(x.production);$('vExpiry').textContent='Scad.: '+date(x.expiry);$('vBlast').textContent=x.blastDate?'Abbattuto il: '+date(x.blastDate):''}
-const labelDimensions=()=> $('labelSize').value==='6080'?{w:60,h:80,canvasW:900,canvasH:1200,cls:'size-6080'}:{w:60,h:40,canvasW:1800,canvasH:1200,cls:''};
-function applyLabelSize(){const d=labelDimensions();$('label').classList.toggle('size-6080',$('labelSize').value==='6080');$('photoLabelPreview').classList.toggle('size-6080',$('labelSize').value==='6080');$('photoEditorLayout')?.classList.toggle('size-6080',$('labelSize').value==='6080');const hint=document.querySelector('#photoLabelSection .photo-pan-hint');if(hint)hint.textContent='Trascina la fotografia con il dito per spostarla e centrare l’etichetta.';document.querySelector('#editor .preview + p.hint').textContent='Anteprima in scala reale del formato '+d.w+' × '+d.h+' mm.';if(labelPhotoSource)renderLabelPhoto();}
+const labelDimensions=()=> $('labelSize').value==='6080'?{w:60,h:80,canvasW:480,canvasH:640,cls:'size-6080'}:{w:60,h:40,canvasW:480,canvasH:320,cls:''};
+function applyLabelSize(){const d=labelDimensions();$('label').classList.toggle('size-6080',$('labelSize').value==='6080');$('photoLabelPreview').classList.toggle('size-6080',$('labelSize').value==='6080');$('photoEditorLayout')?.classList.toggle('size-6080',$('labelSize').value==='6080');const hint=document.querySelector('#photoLabelSection .photo-pan-hint');if(hint)hint.textContent='L’immagine viene ritagliata per riempire l’etichetta; trascinala per scegliere l’inquadratura.';document.querySelector('#editor .preview + p.hint').textContent='Anteprima in scala reale del formato '+d.w+' × '+d.h+' mm.';if(labelPhotoSource)renderLabelPhoto();}
 $('labelSize').addEventListener('change',applyLabelSize);
 ids.forEach(k=>$(k).addEventListener('input',update));
 let labelPhotoData='';
