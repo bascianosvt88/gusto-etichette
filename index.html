@@ -26,8 +26,8 @@
 @media print{
  body.photo-print-mode *{visibility:hidden!important}
  body.photo-print-mode #photoPrintArea,body.photo-print-mode #photoPrintArea *{visibility:visible!important}
- body.photo-print-mode #photoPrintArea{display:block!important;position:absolute!important;left:0!important;top:0!important;width:60mm!important;height:40mm!important;margin:0!important;padding:0!important}
- body.photo-print-mode #photoPrintArea img{display:block!important;width:60mm!important;height:40mm!important;object-fit:fill!important}
+ body.photo-print-mode #photoPrintArea{display:block!important;position:absolute!important;left:0!important;top:0!important;width:var(--photo-label-width,60mm)!important;height:var(--photo-label-height,40mm)!important;margin:0!important;padding:0!important}
+ body.photo-print-mode #photoPrintArea img{display:block!important;width:var(--photo-label-width,60mm)!important;height:var(--photo-label-height,40mm)!important;object-fit:fill!important}
 }
 
 body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!important}
@@ -39,11 +39,23 @@ body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!imp
 #pinGate input{font-size:25px;text-align:center;letter-spacing:10px;font-weight:800;margin:0 0 12px}
 #pinGate button{width:100%;border:0;border-radius:11px;padding:14px;background:#527a43;color:white;font-size:16px;font-weight:850}
 #pinError{min-height:20px;color:#b3261e;font-size:12px;margin-top:10px}
+
+.label.size-6080{width:60mm;height:80mm;min-width:60mm;padding:3mm;gap:1.4mm}
+.label.size-6080 .toprow{height:16mm;padding-bottom:1mm}
+.label.size-6080 .logo{width:27mm;min-width:27mm;height:14mm}
+.label.size-6080 .logo img{max-width:27mm;max-height:14mm}
+.label.size-6080 .name{font-size:11pt}
+.label.size-6080 .bodytxt{font-size:8pt;line-height:1.25}
+.label.size-6080 .bottom{font-size:7.5pt;line-height:1.2;padding-top:1mm;gap:1mm 2mm}
+.photo-editor-layout.size-6080{grid-template-columns:60mm minmax(0,1fr)}
+.photo-label-preview.size-6080{width:60mm;height:80mm;min-width:60mm}
+@media print{body.print-size-6080{width:60mm!important}body.print-size-6080 #printArea{width:60mm!important}body.print-size-6080 .label{width:60mm!important;height:80mm!important;min-width:60mm!important}}
 </style></head><body>
 
 <div id="pinGate" role="dialog" aria-modal="true" aria-label="Accesso Gusto Etichette"><div class="pin-card"><div class="pin-mark">G</div><h1>GUSTO</h1><p>ETICHETTE · ACCESSO RISERVATO</p><form id="pinForm"><input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="••••••" aria-label="Codice di accesso" required><button type="submit">ENTRA</button></form><div id="pinError" aria-live="polite"></div></div></div>
 
-<header>GUSTO <small>IL PIACERE IN TAVOLA · ETICHETTE 60 × 40 mm</small></header>
+<header>GUSTO <small>IL PIACERE IN TAVOLA · ETICHETTE</small></header>
+<div style="max-width:650px;margin:10px auto 0;padding:0 12px"><div class="card" style="margin:0"><label for="labelSize">Formato etichetta</label><select id="labelSize" style="width:100%;font:inherit;font-size:16px;padding:11px;border:1px solid #ccd1c8;border-radius:9px;background:white"><option value="6040">60 × 40 mm</option><option value="6080">60 × 80 mm</option></select><p class="hint">La scelta del formato viene applicata sia alle etichette prodotto sia alle etichette fotografiche.</p></div></div>
 <main><div class="tabs"><button id="newTab" class="on">Nuova etichetta</button><button id="archiveTab">Archivio prodotti</button><button id="blastTab">Abbattimenti</button><button id="photoTab">Foto etichetta</button><button id="backupTab">Backup</button></div>
 <section id="editor">
 <div class="card"><h2>Dati prodotto</h2>
@@ -67,7 +79,7 @@ body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!imp
 <section id="photoLabelSection" class="card hide">
 <h2>Fotografia etichetta</h2>
 <p class="hint">Scatta una foto all’etichetta originale oppure scegli un’immagine dalla galleria. Sposta e ingrandisci la fotografia per inquadrare soltanto la parte che vuoi ristampare.</p>
-<div class="photo-editor-layout">
+<div class="photo-editor-layout" id="photoEditorLayout">
  <div class="photo-preview-panel">
   <div id="photoLabelPreview" class="photo-label-preview"><div class="photo-preview-empty">Anteprima fotografia<br>60 × 40 mm</div></div>
   <p class="photo-pan-hint">Trascina la fotografia con il dito per spostarla e centrare l’etichetta.</p>
@@ -103,6 +115,9 @@ body:not(.gusto-unlocked)>header,body:not(.gusto-unlocked)>main{display:none!imp
 <script>
 (()=>{const ids=['name','ingredients','lot','blastDate','production','expiry','referenceLots'];const $=id=>document.getElementById(id);const today=()=>{let d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};const date=v=>v? v.slice(8,10)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'—';if(!$('production').value)$('production').value=today();const read=()=>({...Object.fromEntries(ids.map(k=>[k,$(k).value.trim()]))});const write=o=>{ids.forEach(k=>$(k).value=o[k]||'')};const defaultLot=()=> 'G'+today().replaceAll('-','');
 function update(){let x=read();$('referenceLotsBox').classList.toggle('hide',!x.blastDate);$('vName').textContent=x.name||'NOME PRODOTTO';$('vIngredients').textContent='Ingredienti: '+(x.ingredients||'—');$('vLot').textContent='Lotto: '+(x.lot||defaultLot());$('vProduction').textContent='Prod.: '+date(x.production);$('vExpiry').textContent='Scad.: '+date(x.expiry);$('vBlast').textContent=x.blastDate?'Abbattuto il: '+date(x.blastDate):''}
+const labelDimensions=()=> $('labelSize').value==='6080'?{w:60,h:80,canvasW:900,canvasH:1200,cls:'size-6080'}:{w:60,h:40,canvasW:1800,canvasH:1200,cls:''};
+function applyLabelSize(){const d=labelDimensions();$('label').classList.toggle('size-6080',$('labelSize').value==='6080');$('photoLabelPreview').classList.toggle('size-6080',$('labelSize').value==='6080');$('photoEditorLayout')?.classList.toggle('size-6080',$('labelSize').value==='6080');const hint=document.querySelector('#photoLabelSection .photo-pan-hint');if(hint)hint.textContent='Trascina la fotografia con il dito per spostarla e centrare l’etichetta.';document.querySelector('#editor .preview + p.hint').textContent='Anteprima in scala reale del formato '+d.w+' × '+d.h+' mm.';if(labelPhotoSource)renderLabelPhoto();}
+$('labelSize').addEventListener('change',applyLabelSize);
 ids.forEach(k=>$(k).addEventListener('input',update));
 let labelPhotoData='';
 let labelPhotoSource=null;
@@ -116,7 +131,7 @@ $('photoTab').onclick=()=>show('photo');
 $('startLabelCamera').onclick=()=>{$('labelPhotoInput').setAttribute('capture','environment');$('labelPhotoInput').click()};
 function renderLabelPhoto(){
  if(!labelPhotoSource)return;
- const canvas=document.createElement('canvas');canvas.width=1800;canvas.height=1200;
+ const canvas=document.createElement('canvas');const dims=labelDimensions();canvas.width=dims.canvasW;canvas.height=dims.canvasH;
  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
  const rad=((labelPhotoRotation%360)+360)%360*Math.PI/180;
  const quarter=(Math.abs(labelPhotoRotation)%180)===90;
@@ -138,13 +153,13 @@ $('labelPhotoZoom').oninput=()=>{labelPhotoZoom=Number($('labelPhotoZoom').value
 $('centerLabelPhoto').onclick=()=>{labelPhotoPanX=0;labelPhotoPanY=0;renderLabelPhoto()};
 const photoPreview=$('photoLabelPreview');
 photoPreview.addEventListener('pointerdown',e=>{if(!labelPhotoSource)return;labelPhotoDragging=true;labelPhotoPointer={id:e.pointerId,x:e.clientX,y:e.clientY};photoPreview.classList.add('dragging');photoPreview.setPointerCapture(e.pointerId);e.preventDefault()});
-photoPreview.addEventListener('pointermove',e=>{if(!labelPhotoDragging||!labelPhotoPointer||e.pointerId!==labelPhotoPointer.id)return;const r=photoPreview.getBoundingClientRect();labelPhotoPanX+=(e.clientX-labelPhotoPointer.x)/r.width*1800;labelPhotoPanY+=(e.clientY-labelPhotoPointer.y)/r.height*1200;labelPhotoPointer.x=e.clientX;labelPhotoPointer.y=e.clientY;renderLabelPhoto();e.preventDefault()});
+photoPreview.addEventListener('pointermove',e=>{if(!labelPhotoDragging||!labelPhotoPointer||e.pointerId!==labelPhotoPointer.id)return;const r=photoPreview.getBoundingClientRect();const dims=labelDimensions();labelPhotoPanX+=(e.clientX-labelPhotoPointer.x)/r.width*dims.canvasW;labelPhotoPanY+=(e.clientY-labelPhotoPointer.y)/r.height*dims.canvasH;labelPhotoPointer.x=e.clientX;labelPhotoPointer.y=e.clientY;renderLabelPhoto();e.preventDefault()});
 const endPhotoDrag=e=>{if(!labelPhotoDragging)return;labelPhotoDragging=false;labelPhotoPointer=null;photoPreview.classList.remove('dragging');};
 photoPreview.addEventListener('pointerup',endPhotoDrag);photoPreview.addEventListener('pointercancel',endPhotoDrag);photoPreview.addEventListener('lostpointercapture',endPhotoDrag);
 $('chooseLabelPhoto').onclick=()=>{$('labelPhotoInput').removeAttribute('capture');$('labelPhotoInput').click()};
 $('labelPhotoInput').onchange=()=>{const file=$('labelPhotoInput').files&&$('labelPhotoInput').files[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Seleziona una fotografia valida.');return}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>saveLabelPhotoFromImage(img);img.src=reader.result};reader.readAsDataURL(file)};
 $('clearLabelPhoto').onclick=()=>{labelPhotoData='';labelPhotoSource=null;labelPhotoRotation=0;labelPhotoZoom=1;labelPhotoPanX=0;labelPhotoPanY=0;$('labelPhotoZoom').value='1';$('labelPhotoZoom').disabled=true;$('labelPhotoZoomValue').textContent='100%';$('labelPhotoInput').value='';$('photoLabelPreview').innerHTML='<div class="photo-preview-empty">Anteprima fotografia<br>60 × 40 mm</div>';$('printLabelPhoto').disabled=true;$('rotateLabelLeft').disabled=true;$('rotateLabelRight').disabled=true;$('centerLabelPhoto').disabled=true};
-$('printLabelPhoto').onclick=()=>{if(!labelPhotoData){alert('Prima fotografa o scegli un’immagine.');return}const name=$('photoArchiveName').value.trim();if(!name){alert('Inserisci il nome del prodotto.');$('photoArchiveName').focus();return}const now=new Date().toISOString();const a=get();const idx=a.findIndex(p=>p.type==='photo'&&p.name.toLowerCase()===name.toLowerCase());const record={type:'photo',name,photoData:labelPhotoData,createdAt:now,updatedAt:now};if(idx>=0)a[idx]=record;else a.unshift(record);set(a);let old=$('photoPrintArea');if(old)old.remove();const area=document.createElement('div');area.id='photoPrintArea';const img=document.createElement('img');img.src=labelPhotoData;area.append(img);document.body.append(area);document.body.classList.add('photo-print-mode');const cleanup=()=>{document.body.classList.remove('photo-print-mode');area.remove();window.removeEventListener('afterprint',cleanup)};window.addEventListener('afterprint',cleanup);window.print();setTimeout(cleanup,2500)};
+$('printLabelPhoto').onclick=()=>{if(!labelPhotoData){alert('Prima fotografa o scegli un’immagine.');return}const name=$('photoArchiveName').value.trim();if(!name){alert('Inserisci il nome del prodotto.');$('photoArchiveName').focus();return}const now=new Date().toISOString();const a=get();const idx=a.findIndex(p=>p.type==='photo'&&p.name.toLowerCase()===name.toLowerCase());const record={type:'photo',name,photoData:labelPhotoData,createdAt:now,updatedAt:now};if(idx>=0)a[idx]=record;else a.unshift(record);set(a);let old=$('photoPrintArea');if(old)old.remove();const dims=labelDimensions();const style=document.createElement('style');style.id='dynamicLabelPage';style.textContent='@page{size:'+dims.w+'mm '+dims.h+'mm;margin:0}';document.head.append(style);const area=document.createElement('div');area.id='photoPrintArea';area.style.width=dims.w+'mm';area.style.height=dims.h+'mm';const img=document.createElement('img');img.src=labelPhotoData;img.style.width=dims.w+'mm';img.style.height=dims.h+'mm';area.append(img);document.body.append(area);document.body.style.setProperty('--photo-label-width',dims.w+'mm');document.body.style.setProperty('--photo-label-height',dims.h+'mm');document.body.classList.add('photo-print-mode');const cleanup=()=>{document.body.classList.remove('photo-print-mode');document.body.style.removeProperty('--photo-label-width');document.body.style.removeProperty('--photo-label-height');area.remove();style.remove();window.removeEventListener('afterprint',cleanup)};window.addEventListener('afterprint',cleanup);window.print();setTimeout(cleanup,2500)};
 const get=()=>{try{return JSON.parse(localStorage.getItem('gustoLabels')||'[]')}catch(e){return []}},set=a=>localStorage.setItem('gustoLabels',JSON.stringify(a));
 function render(){let a=get(),box=$('items');box.innerHTML='';if(!a.length){box.textContent='Nessun prodotto salvato.';return}a.forEach((p,i)=>{let row=document.createElement('div');row.className='item';let n=document.createElement('strong');n.textContent=p.name+(p.type==='photo'?' · Etichetta fotografica':'')+' — creata il '+date((p.createdAt||p.updatedAt||'').slice(0,10));let b=document.createElement('button');b.textContent='Apri';b.onclick=()=>{if(p.type==='photo'&&p.photoData){show('photo');$('photoArchiveName').value=p.name;const img=new Image();img.onload=()=>{labelPhotoSource=img;labelPhotoData=p.photoData;labelPhotoRotation=0;labelPhotoZoom=1;labelPhotoPanX=0;labelPhotoPanY=0;$('labelPhotoZoom').value='1';renderLabelPhoto()};img.src=p.photoData}else{write(p);update();show('new')}window.scrollTo(0,0)};let d=document.createElement('button');d.textContent='Elimina';d.onclick=()=>{if(confirm('Eliminare il prodotto?')){let z=get();z.splice(i,1);set(z);render()}};let actions=document.createElement('span');actions.append(b,d);row.append(n,actions);if(p.type==='photo'&&p.photoData){let thumb=document.createElement('img');thumb.src=p.photoData;thumb.alt='Anteprima '+p.name;thumb.style.cssText='display:block;width:120px;height:80px;object-fit:contain;background:#eee;border-radius:6px;margin-top:7px';row.style.display='block';row.append(thumb)}box.append(row)})}
 function getBlast(){try{return JSON.parse(localStorage.getItem('gustoBlastRegister')||'[]')}catch(e){return []}}
@@ -184,7 +199,7 @@ function show(which){
 }
 $('newTab').onclick=()=>show('new');$('archiveTab').onclick=()=>show('archive');$('blastTab').onclick=()=>show('blast');$('backupTab').onclick=()=>show('backup');
 $('save').onclick=()=>{let x=read();if(!x.name){alert('Inserisci il nome del prodotto.');return}let a=get(),i=a.findIndex(p=>p.name.toLowerCase()===x.name.toLowerCase());if(i>=0){if(!confirm('Prodotto già presente: vuoi aggiornare i dati?'))return;a[i]=x}else a.push(x);set(a);alert('Prodotto salvato.');};
-$('print').onclick=()=>{let x=read();if(!x.name){alert('Inserisci il nome del prodotto.');return}if(!x.lot){$('lot').value=defaultLot();update();x=read()}const now=new Date().toISOString();let products=get();const record={...x,type:'product',createdAt:now};const existing=products.findIndex(p=>p.type!=='photo'&&p.name.toLowerCase()===x.name.toLowerCase());if(existing>=0)products[existing]=record;else products.unshift(record);set(products);if(x.blastDate){saveBlastRecord(x)}let count=Math.max(1,Math.min(99,parseInt($('copies').value,10)||1));let old=$('printArea');if(old)old.remove();let area=document.createElement('div');area.id='printArea';for(let i=0;i<count;i++){let c=$('label').cloneNode(true);c.removeAttribute('id');area.append(c)}document.body.append(area);let clean=()=>{area.remove();window.removeEventListener('afterprint',clean)};window.addEventListener('afterprint',clean);window.print();setTimeout(clean,2000)};
+$('print').onclick=()=>{let x=read();if(!x.name){alert('Inserisci il nome del prodotto.');return}if(!x.lot){$('lot').value=defaultLot();update();x=read()}const now=new Date().toISOString();let products=get();const record={...x,type:'product',createdAt:now};const existing=products.findIndex(p=>p.type!=='photo'&&p.name.toLowerCase()===x.name.toLowerCase());if(existing>=0)products[existing]=record;else products.unshift(record);set(products);if(x.blastDate){saveBlastRecord(x)}let count=Math.max(1,Math.min(99,parseInt($('copies').value,10)||1));let old=$('printArea');if(old)old.remove();const dims=labelDimensions();const pageStyle=document.createElement('style');pageStyle.id='dynamicLabelPage';pageStyle.textContent='@page{size:'+dims.w+'mm '+dims.h+'mm;margin:0}';document.head.append(pageStyle);document.body.classList.toggle('print-size-6080',$('labelSize').value==='6080');let area=document.createElement('div');area.id='printArea';for(let i=0;i<count;i++){let c=$('label').cloneNode(true);c.removeAttribute('id');area.append(c)}document.body.append(area);let clean=()=>{area.remove();pageStyle.remove();document.body.classList.remove('print-size-6080');window.removeEventListener('afterprint',clean)};window.addEventListener('afterprint',clean);window.print();setTimeout(clean,2000)};
 $('exportBlastPdf').addEventListener('click',()=>{
  const records=getBlast();
  if(!records.length){alert('Non ci sono ancora abbattimenti da esportare.');return;}
@@ -232,5 +247,5 @@ $('generalBackupFile').onchange=async e=>{
   alert('Backup importato correttamente. L’app verrà ricaricata.');location.reload();
  }catch(err){alert('Importazione non riuscita: '+err.message)}
 };
-update()})();
+applyLabelSize();update()})();
 </script></body></html>
